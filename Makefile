@@ -12,6 +12,7 @@
 
 all:
 	@echo Setting up virtual env
+	tar zxvf datasets.tgz
 	python3 -m pip install --user virtualenv
 	python3 -m venv .venv
 	( \
