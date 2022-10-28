@@ -3,7 +3,6 @@ import numpy as np
 from data.data import Data
 
 
-
 class LogisticRegression:
     """
         A class to perform Logistic Regression
@@ -30,14 +29,25 @@ class LogisticRegression:
         self.w_history = []
 
         # parameteres (weights)
-        self.w = None
-        self.b = None
+        # thetas[0] => b, thetas[1 to n] => w
+        self.thetas = None
 
         # regularization constant lambda_ (scalar, float)
         self.lambda_ = None
 
+    def initialize_thetas(self):
+        """
+        Initialize thetas (weights) where 1st entry is the b (intercept) and the rest w (therefore size n+1)
+        X is concatenated with an np.ones of shape (m, 1) for the b (intercept)
+        """
+        self.thetas = np.zeros((self.n + 1, 1))
+
+
     def save_weights(self):
-        return {'w': self.w.tolist(), 'b': self.b}
+        return {'w': self.thetas[1:].tolist(), 'b': self.thetas[0]}
+
+    def load_weights(self, weights):
+        self.thetas = weights
 
     def sigmoid(self, z):
         """
@@ -64,17 +74,18 @@ class LogisticRegression:
 
         m, n = X.shape
 
-        z = np.dot(X, w) + b
+        z = np.dot(X, thetas)
         pred = self.sigmoid(z)
 
-        pred[pred == 1] = 1-1e-9  # hard cap max threshold
-
-        cost = np.dot(-y, np.log(pred)) - (np.dot(1 - y, np.log(1 - pred)))
-        total_cost = np.sum(cost) / m
-
+#         pred[pred == 1] = 1-1e-9 #hard cap max threshold
+        
+        
+        cost = np.dot(-y.T, np.log(pred)) - (np.dot( (1-y).T, np.log(1 - pred)))
+        total_cost = cost / m
+    
         reg_cost = np.sum(np.dot(w, w.T))
         total_cost = total_cost + (self.lambda_/(2 * m)) * reg_cost
-
+        
         return total_cost
 
     def compute_gradient(self, X, y, w, b, lambda_):
@@ -92,20 +103,14 @@ class LogisticRegression:
           dj_db: (scalar)                The gradient of the cost w.r.t. the parameter b. 
         """
         m, n = X.shape
-        dj_dw = np.zeros(w.shape)
-        dj_db = 0.0
+        dj = np.zeros(thetas.shape)
 
-        z = np.dot(X, w) + b
+        z = np.dot(X, thetas)
         f_wb = self.sigmoid(z)
 
-        for j in range(n):
-            dj_dw[j] = (np.sum(np.dot(f_wb - y, X.T[j])))
-
-        dj_dw = dj_dw / m
-        dj_dw += np.dot((lambda_ / m), w)  # add regularization
-        dj_db = np.sum(f_wb - y) / m
-
-        return dj_db, dj_dw
+        dj = np.dot(X.T, f_wb - np.reshape(y,(len(y),1)) )
+        
+        return dj
 
     def gradient_descent(self, cost_function, gradient_function, alpha, num_iters, show_every):
         """
@@ -113,82 +118,64 @@ class LogisticRegression:
         num_iters gradient steps with learning rate alpha
 
         Args:
-          X :    (array_like Shape (m, n)
-          y :    (array_like Shape (m,))
-          w_in : (array_like Shape (n,))  Initial values of parameters of the model
-          b_in : (scalar)                 Initial value of parameter of the model
           cost_function:                  function to compute cost
           alpha : (float)                 Learning rate
           num_iters : (int)               number of iterations to run gradient descent
           lambda_ (scalar, float)         regularization constant
-
-        Returns:
-          w : (array_like Shape (n,)) Updated values of parameters of the model after
-              running gradient descent
-          b : (scalar)                Updated value of parameter of the model after
-              running gradient descent
         """
 
-        w_in = self.w
-        b_in = self.b
         for i in range(num_iters):
 
             # Calculate the gradient and update the parameters
-            dj_db, dj_dw = gradient_function(
-                self.X, self.y, w_in, b_in, self.lambda_)
+            dj = gradient_function(self.X, self.y, self.thetas, self.lambda_)   
 
             # Update Parameters using w, b, alpha and gradient
-            w_in = w_in - alpha * dj_dw
-            b_in = b_in - alpha * dj_db
+            self.thetas = self.thetas - alpha * dj
 
             # Save cost J at each iteration
-            if i < 100000:      # prevent resource exhaustion
-                cost = cost_function(self.X, self.y, w_in, b_in)
+            if i<100000:      # prevent resource exhaustion 
+                cost =  cost_function(self.X, self.y, self.thetas)
+
             # Print cost every at intervals 10 times or as many iterations if < 10
             if i % show_every == 0 or i == num_iters-1:
                 self.J_history.append(cost)
 #                 self.w_history.append(self.w)
-                print(
-                    f"Iteration {i:4}: Cost {float(self.J_history[-1]):8.2f}   ")
-        self.w = w_in
-        self.b = b_in
+                print(f"Iteration {i:4}: Cost {float(self.J_history[-1]):8.2f}   ")
 
-    def fit(self, X, y, alpha=0.001, iterations=1500, show_every=None, lambda_=1):
+    def fit(self, X, y, alpha=0.001, iterations=1500, show_every=None, lambda_= 1):
         """
         setup attributes and apply training
         """
 
-        # train data and label
-        self.X = X
-        self.y = y
-
         # m: number of observations
         self.m, self.n = X.shape
+        
+        # train data and label
+        self.X = np.c_[np.ones((self.m, 1)), X]
+        self.y = y
 
         # regularization coefficient
         self.lambda_ = lambda_
 
         # init weights if first call
-        if type(self.w) is not np.ndarray:
-            self.w = 0.01 * (np.random.rand(self.n).reshape(-1, 1) - 0.5)
-        if self.b == None:
-            self.b = -8
+        if type(self.thetas) is not np.ndarray:
+            self.initialize_thetas()
         if show_every == None:
-            show_every = iterations // 10
-
+            if (iterations <= 10):
+                show_every = 1
+            else:
+                show_every = iterations // 10 
+            
         # Perform Gradient Descent
-        self.gradient_descent(
-            self.compute_cost, self.compute_gradient, alpha, iterations, show_every)
+        self.gradient_descent(self.compute_cost, self.compute_gradient, alpha, iterations, show_every)
 
-    def predict(self, X, decision_boundary=None):
+    def predict(self, X, decision_boundary = None): 
         """
         Predict whether the label is 0 or 1 using learned logistic
         regression parameters w
 
         Args:
         X : (ndarray Shape (m, n))
-        w : (array_like Shape (n,))      Parameters of the model
-        b : (scalar, float)              Parameter of the model
 
         Returns:
         p: (ndarray (m,1))
@@ -201,7 +188,8 @@ class LogisticRegression:
         m, n = X.shape
         p = np.zeros(m)
 
-        f_wb = self.sigmoid(np.dot(X, self.w) + self.b)
+        X = np.c_[np.ones((self.m, 1)), X]
+        f_wb = self.sigmoid(np.dot(X, self.thetas))
 
         if decision_boundary != None:
             for i, prob in enumerate(f_wb):
@@ -291,21 +279,25 @@ class MultipleLogisticRegression:
         self.c = y.shape[1]
 
         if show_every == None:
-            show_every = iterations // 10
+            if (iterations <= 10):
+                show_every = 1
+            else:
+                show_every = iterations // 10 
 
         # init models
         if not self.models:
             for i in range(self.c):
                 self.models.append(LogisticRegression())
 
-        # train models
+         # train models
         decision_boundary = 0.5
         for i in range(self.c):
             model = self.models[i]
-            print(f"training model {i+1} with alpha= {0.00003}")
-            model.fit(X, y[:, i], alpha, iterations, lambda_=1)
+            print(f"training model {i+1} with alpha= {alpha}")
+            model.fit(X, y[: , i], alpha=alpha, iterations=iterations, lambda_ = lambda_)
             p = model.predict(X, decision_boundary)
-            print('Train Accuracy: %f' % (np.mean(p == y[:, i]) * 100))
+            print('Train Accuracy: %f'%(np.mean(p == y[:, i]) * 100))
+            print()
 
     def predict(self, X):
         return self.softmax(X)

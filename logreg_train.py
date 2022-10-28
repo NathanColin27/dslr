@@ -2,7 +2,7 @@ import argparse
 import sys
 import pandas as pd
 import numpy as np
-from data.data import Data
+from Data.data import Data
 from LR_models import LogisticRegression, MultipleLogisticRegression
 import os
 import json
@@ -41,9 +41,11 @@ def clean_dataset(data):
                        'Last Name', 'Birthday', 'Best Hand']
 
     # The pair plot we saw before showed us that some variables have a histogram with almost
-    # all similar traits within the same House. We will drop them.
-    columns_to_drop.extend(
-        ['Arithmancy', 'Care of Magical Creatures', 'Potions'])
+    # all similar traits within the same House. 
+    # 'Defense Against the Dark Arts' has a complete linearity with 'Astronomy', 
+    # and the histogram shows that they are almost identical (with the sign reversed). We'll drop Defence.
+    columns_to_drop.extend(['Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
+    
     df_train = data.df.drop(columns=columns_to_drop)
     data.features = [f for f in data.features if f not in columns_to_drop]
     # Transform string values (Houses) to category
@@ -66,6 +68,7 @@ def export_dataset(df, name):
 def main(sys_argv):
     args = parse_args()
 
+    # Data cleaning
     data = Data(datafile=args.data)
     data.df = clean_dataset(data)
     for col in data.features:
@@ -73,17 +76,19 @@ def main(sys_argv):
         std = data.std(col)
         data.df[col] = normalize(data.df[col], mean, std)
     export_dataset(data.df, args.data)
+
+    # train
     df = pd.read_csv('./datasets/clean/dataset_train.csv')
     target_columns = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
     X_train = np.array(df.drop(columns=target_columns))
     y_train = np.array(df[target_columns])
-    models = MultipleLogisticRegression()
-    models.fit(X_train, y_train, alpha=args.alpha, iterations=args.iterations)
-    models.fit(X_train, y_train, alpha=args.alpha /
-               10, iterations=args.iterations)
+
+    Models = MultipleLogisticRegression()
+    Models.fit(X_train, y_train, alpha=args.alpha, iterations=args.iterations)
+    Models.fit(X_train, y_train, alpha=args.alpha / 10, iterations=args.iterations)
 
     with open("weights.json", "w") as outfile:
-        json.dump(models.save_weights(), outfile)
+        json.dump(Models.save_weights(), outfile)
 
 
 if __name__ == '__main__':
