@@ -8,7 +8,7 @@ import os
 import json
 from distutils.util import strtobool
 
-def user_yes_no_query(question):
+def user_prompt(question):
     sys.stdout.write('%s [y/n]\n' % question)
     while True:
         try:
@@ -87,20 +87,31 @@ def main(sys_argv):
 
     # train
     df = pd.read_csv('./datasets/clean/dataset_train.csv')
-    target_columns = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
-    X_train = np.array(df.drop(columns=target_columns))
-    y_train = np.array(df[target_columns])
+    houses = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
+    X_train = np.array(df.drop(columns=houses))
+    y_train = np.array(df[houses])
 
     Models = MultipleLogisticRegression()
     Models.fit(X_train, y_train, alpha=args.alpha, iterations=args.iterations)
     Models.fit(X_train, y_train, alpha=args.alpha / 10, iterations=args.iterations)
+    
+    # To loac from saved weights and predict
+    # Models.load_weights("Model_parameters.json")
+    predictions = Models.predict(X_train)
+
+    true_labels = []
+    for row in y_train:
+        # for each row (student), return the column (house) with the actual label
+        true_labels.append(np.argmax(row / np.sum(row)))
+    true_labels = np.array(true_labels)
+
+
+    score_matrix, _ = Models.score_matrix(predictions, true_labels)
+    print(score_matrix)
 
     # Prompt user to save parameters or not
-    if (user_yes_no_query("Do you wish to save the parameters?")):
-        Models.save_weights("data/parameters.csv")
-
-    # with open("weights.json", "w") as outfile:
-    #     json.dump(Models.save_weights(), outfile)
+    if (user_prompt("Do you wish to save the parameters?")):
+        Models.save_weights("Model_parameters.json", houses)
 
 
 if __name__ == '__main__':
