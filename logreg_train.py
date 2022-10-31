@@ -1,11 +1,20 @@
 import argparse
-import json
-import numpy as np
-import pandas as pd
 import sys
+import pandas as pd
+import numpy as np
 from data.data import Data
-import data.data_tools as dt
-from LR_models import MultipleLogisticRegression
+from LR_models import LogisticRegression, MultipleLogisticRegression
+import os
+import json
+from distutils.util import strtobool
+
+def user_yes_no_query(question):
+    sys.stdout.write('%s [y/n]\n' % question)
+    while True:
+        try:
+            return strtobool(input().lower())
+        except ValueError:
+            sys.stdout.write('Please respond with \'y\' or \'n\'.\n')
 
 
 def parse_args():
@@ -46,9 +55,13 @@ def main(sys_argv):
     Models.fit(X_train, y_train, alpha=args.alpha /
                10, iterations=args.iterations)
 
-    with open("weights.json", "w") as outfile:
-        json.dump(Models.save_weights(), outfile)
-        print(f"Models weights saved under {outfile.name}")
+
+    # Prompt user to save parameters or not
+    if (user_yes_no_query("Do you wish to save the parameters?")):
+        Models.save_weights("data/parameters.csv")
+
+    # with open("weights.json", "w") as outfile:
+    #     json.dump(Models.save_weights(), outfile)
 
 
 if __name__ == '__main__':
