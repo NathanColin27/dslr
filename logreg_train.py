@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from data.data import Data
 from LR_models import LogisticRegression, MultipleLogisticRegression
+import data.data_tools as dt
 import os
 import json
 from distutils.util import strtobool
@@ -19,9 +20,9 @@ def user_prompt(question):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-a", "--alpha", type=float,
                         help="learning rate of the logistic regression algorithm", default=0.001)
-
     parser.add_argument(
         "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=50)
     parser.add_argument("-d", "--data", help="dataset csv file input",
@@ -36,54 +37,13 @@ def parse_args():
     return args
 
 
-def normalize(x, mean, std):
-    """
-    x: np array of feature X
-    """
-    return (x - mean) / std
-
-
-def clean_dataset(data):
-    # We start by dropping columns that are most likely not relevant to our target value (from our intuition)
-    columns_to_drop = ['Index', 'First Name',
-                       'Last Name', 'Birthday', 'Best Hand']
-
-    # The pair plot we saw before showed us that some variables have a histogram with almost
-    # all similar traits within the same House. 
-    # 'Defense Against the Dark Arts' has a complete linearity with 'Astronomy', 
-    # and the histogram shows that they are almost identical (with the sign reversed). We'll drop Defence.
-    columns_to_drop.extend(['Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
-    
-    df_train = data.df.drop(columns=columns_to_drop)
-    data.features = [f for f in data.features if f not in columns_to_drop]
-    # Transform string values (Houses) to category
-    df_train = pd.concat(
-        [df_train, pd.get_dummies(df_train['Hogwarts House'])], axis=1)
-    df_train = df_train.drop(columns='Hogwarts House')
-
-    # In order to preserve the whole dataset, we are going to replace the missing entries by their column average value
-    df_train = df_train.fillna(df_train.mean())
-
-    return df_train.fillna(df_train.mean())
-
-
-def export_dataset(df, name):
-    name = os.path.basename(os.path.normpath(name))
-    os.makedirs('./datasets/clean', exist_ok=True)
-    df.to_csv(f'./datasets/clean/{name}', index=False)
-
-
 def main(sys_argv):
     args = parse_args()
-
     # Data cleaning
     data = Data(datafile=args.data)
-    data.df = clean_dataset(data)
-    for col in data.features:
-        mean = data.mean(col)
-        std = data.std(col)
-        data.df[col] = normalize(data.df[col], mean, std)
-    export_dataset(data.df, args.data)
+    dt.clean_dataset(data)
+    dt.normalize_set(data)
+    dt.export_dataset(data.df, args.data)
 
     # train
     df = pd.read_csv('./datasets/clean/dataset_train.csv')
@@ -104,7 +64,6 @@ def main(sys_argv):
         # for each row (student), return the column (house) with the actual label
         true_labels.append(np.argmax(row / np.sum(row)))
     true_labels = np.array(true_labels)
-
 
     score_matrix, _ = Models.score_matrix(predictions, true_labels)
     print(score_matrix)
