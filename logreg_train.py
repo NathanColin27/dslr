@@ -3,9 +3,8 @@ import sys
 import pandas as pd
 import numpy as np
 from data.data import Data
-from LR_models import LogisticRegression, MultipleLogisticRegression
-import os
-import json
+import data.data_tools as dt
+from LR_models import MultipleLogisticRegression
 from distutils.util import strtobool
 
 def user_yes_no_query(question):
@@ -21,17 +20,17 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-a", "--alpha", type=float,
-                        help="learning rate of the logistic regression algorithm", default=0.001)
+                        help="learning rate of the logistic regression algorithm", default=0.0001)
     parser.add_argument(
-        "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=50)
+        "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=5000)
     parser.add_argument("-d", "--data", help="dataset csv file input",
                         default="./datasets/dataset_train.csv")
     # parser.add_argument("-v", "--verbose", help="increase output verbosity",
     #                     action="store_true")
     args = parser.parse_args()
 
-    if not 10 <= args.iterations <= 100:
-        print("Iterations must be a value between 10 and 100")
+    if not 10 <= args.iterations <= 10000:
+        print("Iterations must be a value between 10 and 10000")
         exit(1)
     return args
 
@@ -52,8 +51,8 @@ def main(sys_argv):
 
     Models = MultipleLogisticRegression()
     Models.fit(X_train, y_train, alpha=args.alpha, iterations=args.iterations)
-    Models.fit(X_train, y_train, alpha=args.alpha /
-               10, iterations=args.iterations)
+    # Models.fit(X_train, y_train, alpha=args.alpha /
+    #            10, iterations=args.iterations)
 
 
     # Prompt user to save parameters or not

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from data.data import Data
+import matplotlib.pyplot as plt
 
 class LogisticRegression:
     """
@@ -132,11 +133,12 @@ class LogisticRegression:
             # Save cost J at each iteration
             if i<100000:      # prevent resource exhaustion 
                 cost =  cost_function(self.X, self.y, self.thetas)
+                self.J_history.append(float(cost))
 
             # Print cost every at intervals 10 times or as many iterations if < 10
             if i % show_every == 0 or i == num_iters-1:
-                self.J_history.append(cost)
-#                 self.w_history.append(self.w)
+                # print(float(cost))
+                # self.w_history.append(self.w)
                 print(f"Iteration {i:4}: Cost {float(self.J_history[-1]):8.2f}   ")
 
     def fit(self, X, y, alpha=0.001, iterations=1500, show_every=None, lambda_= 1):
@@ -165,6 +167,8 @@ class LogisticRegression:
             
         # Perform Gradient Descent
         self.gradient_descent(self.compute_cost, self.compute_gradient, alpha, iterations, show_every)
+
+        return self.J_history
 
     def predict(self, X, decision_boundary = None): 
         """
@@ -274,7 +278,7 @@ class MultipleLogisticRegression:
 
         # c: number of category
         self.c = y.shape[1]
-
+        self.cost_histories = []
         if show_every == None:
             if (iterations <= 10):
                 show_every = 1
@@ -291,10 +295,19 @@ class MultipleLogisticRegression:
         for i in range(self.c):
             model = self.models[i]
             print(f"training model {i+1} with alpha= {alpha}")
-            model.fit(X, y[: , i], alpha=alpha, iterations=iterations, lambda_ = lambda_)
+            self.cost_histories.append(model.fit(X, y[: , i], alpha=alpha, iterations=iterations, lambda_ = lambda_))
             p = model.predict(X, decision_boundary)
             print('Train Accuracy: %f'%(np.mean(p == y[:, i]) * 100))
             print()
+
+        plt.figure(figsize=(30, 15))
+        plt.suptitle(f"Logistic regression cost history by models (alpha = {alpha}, iterations = {iterations})", fontsize=18, y=0.95)
+        for index,i in enumerate(self.cost_histories):
+            ax = plt.subplot(2,2, index + 1)
+            ax.plot(i)
+            ax.set_title(f'model_{index}')
+
+        plt.show()
 
     def predict(self, X):
         return self.softmax(X)
