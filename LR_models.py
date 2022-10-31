@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from data.data import Data
 import matplotlib.pyplot as plt
+import json
+
 
 class LogisticRegression:
     """
@@ -22,8 +24,8 @@ class LogisticRegression:
         # n: number of independent variables (X)
         self.n = None
 
-        # store historic value of cost function. init as +infinity
-        self.costs = [np.inf]
+        # store historic value of cost function.
+        self.costs = []
 
         self.J_history = []
         self.w_history = []
@@ -44,10 +46,11 @@ class LogisticRegression:
 
 
     def save_weights(self):
-        return {'w': self.thetas[1:].tolist(), 'b': self.thetas[0]}
+        return {'b': self.thetas[0].tolist(), 'w': self.thetas[1:].tolist()}
 
     def load_weights(self, weights):
-        self.thetas = weights
+        self.thetas = np.reshape(weights, (-1, 1))
+        self.n = len(weights) - 1
 
     def sigmoid(self, z):
         """
@@ -189,7 +192,7 @@ class LogisticRegression:
         m, n = X.shape
         p = np.zeros(m)
 
-        X = np.c_[np.ones((self.m, 1)), X]
+        X = np.c_[np.ones((m, 1)), X]
         f_wb = self.sigmoid(np.dot(X, self.thetas))
 
         if decision_boundary != None:
@@ -213,12 +216,32 @@ class MultipleLogisticRegression:
 
         self.models = []
 
-    def save_weights(self):
-        houses = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
+    def save_weights(self, filename, category_list):
         weights = {}
         for index, model in enumerate(self.models):
-            weights[houses[index]] = model.save_weights()
-        return {'weights': weights}
+            weights[category_list[index]] = model.save_weights()
+        with open(filename, "w") as outfile:
+            json.dump(weights, outfile)
+
+    def load_weights(self, filename):
+        
+        f = open(filename)
+        data = json.load(f)  # returns JSON object as a dictionary
+        
+        # init models
+        if not self.models:
+            self.c = len(data)  # get number of category
+            for i in range(self.c):
+                self.models.append(LogisticRegression())
+
+        for idx, category in enumerate(data):
+            # concat to get the thetas for each model
+            w = np.array(data[category]['w'])
+            b = np.array(data[category]['b'])
+            thetas = np.concatenate((b, w), axis=None)
+            self.models[idx].load_weights(thetas)
+            
+
 
     def softmax(self, X):
         """
@@ -235,14 +258,14 @@ class MultipleLogisticRegression:
         res = np.array(res)
         return res
 
-    def accuracy(self, pred, true_labels):
+    def accuracy(self, pred_labels, true_labels):
         """
         calculate the accuracy of the model prediction given the true labels
         """
-        if pred.shape != true_labels.shape:
+        if pred_labels.shape != true_labels.shape:
             print('Error in the shape of predictions and true_labels')
             return
-        accuracy = np.mean(pred == true_labels) * 100
+        accuracy = np.mean(pred_labels == true_labels) * 100
         print('Accuracy: %f' % (accuracy))
         return accuracy
 
