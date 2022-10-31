@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from data.data import Data
 
-
 class LogisticRegression:
     """
         A class to perform Logistic Regression
@@ -59,7 +58,7 @@ class LogisticRegression:
         """
         return 1 / (1 + np.exp(-z))
 
-    def compute_cost(self, X, y, w, b):
+    def compute_cost(self, X, y, thetas):
         """
         Computes the cost over all examples
         Args:
@@ -75,20 +74,18 @@ class LogisticRegression:
         m, n = X.shape
 
         z = np.dot(X, thetas)
-        pred = self.sigmoid(z)
-
-#         pred[pred == 1] = 1-1e-9 #hard cap max threshold
-        
+        pred = self.sigmoid(z)        
         
         cost = np.dot(-y.T, np.log(pred)) - (np.dot( (1-y).T, np.log(1 - pred)))
         total_cost = cost / m
     
-        reg_cost = np.sum(np.dot(w, w.T))
-        total_cost = total_cost + (self.lambda_/(2 * m)) * reg_cost
+        # Regularization
+        # reg_cost = np.sum(np.dot(w, w.T))
+        # total_cost = total_cost + (self.lambda_/(2 * m)) * reg_cost
         
         return total_cost
 
-    def compute_gradient(self, X, y, w, b, lambda_):
+    def compute_gradient(self, X, y, thetas, lambda_):
         """
         Computes the gradient for logistic regression 
 
