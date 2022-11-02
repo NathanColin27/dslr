@@ -131,3 +131,6 @@ dmypy.json
 
 # model save param
 *.json
+
+# trash
+.DS_Store

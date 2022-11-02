@@ -1,4 +1,5 @@
 from os import lseek
+import sys
 from data.data import Data
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -51,6 +52,18 @@ def draw_table(data):
 
 
 if __name__ == '__main__':
-    data = Data()
+    if len(sys.argv) == 2:
+        datafile = str(sys.argv[1])
+        if not datafile.endswith(".csv"):
+            print("File must be a csv extension:", datafile)
+            sys.exit()
+        try:
+            f = open(datafile, 'rb')
+        except OSError:
+            print("Could not open file:", datafile)
+            sys.exit()
+        data = Data(datafile)
+    else:
+        data = Data()
     prepare_data(data)
     draw_table(data)

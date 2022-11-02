@@ -49,12 +49,6 @@ def main(sys_argv):
 
     # train
     df = pd.read_csv('./datasets/clean/dataset_train.csv')
-    
-    print(df.head(10))
-    df = data.df
-    print(df.head(10))
-    
-    exit(1)
     houses = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
     X_train = np.array(df.drop(columns=houses))
     y_train = np.array(df[houses])

@@ -28,6 +28,8 @@ class Data():
         """
         Returns the mean for the values of the requested feature.
         """
+        if (self.count(feature) == 0):  # Quick fix For testset, to avoid error
+            return 0
         return (sum(self.df[feature].dropna()) / self.count(feature))
 
     def variance(self, feature: str) -> float:
@@ -59,6 +61,8 @@ class Data():
         arr = np.array(self.df[feature].dropna())
         arr.sort()
         l = self.count(feature)/100
+        if (self.count(feature) == 0):  # Quick fix For testset, to avoid error
+            return 0
         return arr[int(percent * l)]
     
     def export_parameters():
