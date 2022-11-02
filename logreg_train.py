@@ -54,9 +54,6 @@ def main(sys_argv):
 
     # Models.fit(X_train, y_train, alpha=args.alpha /
     #            10, iterations=args.iterations)
-
-    Models.fit(X_train, y_train, alpha=args.alpha / 10, iterations=args.iterations)
-    
     # To loac from saved weights and predict
     # Models.load_weights("Model_parameters.json")
     predictions = Models.predict(X_train)

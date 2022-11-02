@@ -329,7 +329,6 @@ class MultipleLogisticRegression:
             ax = plt.subplot(2,2, index + 1)
             ax.plot(i)
             ax.set_title(f'model_{index}')
-
         plt.show()
 
     def predict(self, X):
