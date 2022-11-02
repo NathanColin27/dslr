@@ -32,6 +32,10 @@ def parse_args():
     if not 10 <= args.iterations <= 10000:
         print("Iterations must be a value between 10 and 10000")
         exit(1)
+    if not 0.000001 <= args.alpha <= 0.01:
+        print("Learning rate must be a value between 0.000001 and 0.01")
+        exit(1)
+
     return args
 
 
@@ -45,6 +49,12 @@ def main(sys_argv):
 
     # train
     df = pd.read_csv('./datasets/clean/dataset_train.csv')
+    
+    print(df.head(10))
+    df = data.df
+    print(df.head(10))
+    
+    exit(1)
     houses = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
     X_train = np.array(df.drop(columns=houses))
     y_train = np.array(df[houses])
@@ -70,7 +80,7 @@ def main(sys_argv):
 
     # Prompt user to save parameters or not
     if (user_prompt("Do you wish to save the parameters?")):
-        Models.save_weights("Model_parameters.json", houses)
+        Models.save_weights("Model_weights.json", houses)
 
 
 if __name__ == '__main__':

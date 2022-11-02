@@ -18,8 +18,7 @@ def clean_dataset(data):
     data.features = [f for f in data.features if f not in columns_to_drop]
     # Transform string values (Houses) to category
 
-    df_train = pd.concat(
-        [df_train, pd.get_dummies(df_train['Hogwarts House'])], axis=1)
+    df_train = pd.concat([df_train, pd.get_dummies(df_train['Hogwarts House'])], axis=1)
     df_train = df_train.drop(columns='Hogwarts House')
 
     # In order to preserve the whole dataset, we are going to replace the missing entries by their column average value

@@ -60,3 +60,9 @@ class Data():
         arr.sort()
         l = self.count(feature)/100
         return arr[int(percent * l)]
+    
+    def export_parameters():
+        pass
+    
+    def import_parameters():
+        pass
