@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument("-a", "--alpha", type=float,
                         help="learning rate of the logistic regression algorithm", default=0.0001)
     parser.add_argument(
-        "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=5000)
+        "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=1000)
     parser.add_argument("-d", "--data", help="dataset csv file input",
                         default="./datasets/dataset_train.csv")
     # parser.add_argument("-v", "--verbose", help="increase output verbosity",
