@@ -4,8 +4,9 @@ import pandas as pd
 import numpy as np
 from data.data import Data
 import data.data_tools as dt
-from LR_models import MultipleLogisticRegression
+from logreg_models import MultipleLogisticRegression
 from distutils.util import strtobool
+
 
 def user_prompt(question):
     sys.stdout.write('%s [y/n]\n' % question)
@@ -24,9 +25,7 @@ def parse_args():
     parser.add_argument(
         "-i", "--iterations", type=int, help="number of iterations of the logistic regression algorithm", default=1000)
     parser.add_argument("-d", "--data", help="dataset csv file input",
-                        default="./datasets/dataset_train.csv")
-    # parser.add_argument("-v", "--verbose", help="increase output verbosity",
-    #                     action="store_true")
+                        default="../datasets/dataset_train.csv")
     args = parser.parse_args()
 
     if not 10 <= args.iterations <= 10000:
@@ -48,7 +47,7 @@ def main(sys_argv):
     dt.export_dataset(data.df, args.data)
 
     # train
-    df = pd.read_csv('./datasets/clean/dataset_train.csv')
+    df = pd.read_csv('../datasets/clean/dataset_train.csv')
     houses = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
     X_train = np.array(df.drop(columns=houses))
     y_train = np.array(df[houses])
@@ -56,12 +55,7 @@ def main(sys_argv):
     Models = MultipleLogisticRegression()
     Models.fit(X_train, y_train, alpha=args.alpha, iterations=args.iterations)
 
-    # Models.fit(X_train, y_train, alpha=args.alpha /
-    #            10, iterations=args.iterations)
-    # To loac from saved weights and predict
-    # Models.load_weights("Model_parameters.json")
     predictions = Models.predict(X_train)
-
 
     true_labels = []
     for row in y_train:

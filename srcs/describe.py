@@ -1,7 +1,6 @@
 from os import lseek
 import sys
 from data.data import Data
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from functools import partial
 

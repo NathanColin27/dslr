@@ -1,5 +1,4 @@
 from data.data import Data
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -44,7 +43,7 @@ def scatter_plot(data):
 if __name__ == '__main__':
 
     #  Uncomment this section to show data justification
-    # 
+    #
     # correlation_scores = {}
     # for i in courses:
     #     for j in courses:
@@ -54,6 +53,6 @@ if __name__ == '__main__':
     # print("Best correlation coefficient found between classes : ",
     # max(correlation_scores, key=correlation_scores.get))
     # print(correlation_scores['Astronomy-Defense Against the Dark Arts'])
-    
+
     data = Data()
     scatter_plot(data)

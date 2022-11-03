@@ -1,7 +1,7 @@
 from data.data import Data
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
+
 
 def histogram(data):
     # removing index

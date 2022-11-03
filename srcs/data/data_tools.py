@@ -18,7 +18,8 @@ def clean_dataset(data):
     data.features = [f for f in data.features if f not in columns_to_drop]
     # Transform string values (Houses) to category
 
-    df_train = pd.concat([df_train, pd.get_dummies(df_train['Hogwarts House'])], axis=1)
+    df_train = pd.concat(
+        [df_train, pd.get_dummies(df_train['Hogwarts House'])], axis=1)
     df_train = df_train.drop(columns='Hogwarts House')
 
     # In order to preserve the whole dataset, we are going to replace the missing entries by their column average value
@@ -28,8 +29,8 @@ def clean_dataset(data):
 
 def export_dataset(df, name):
     name = os.path.basename(os.path.normpath(name))
-    os.makedirs('./datasets/clean', exist_ok=True)
-    df.to_csv(f'./datasets/clean/{name}', index=False)
+    os.makedirs('../datasets/clean', exist_ok=True)
+    df.to_csv(f'../datasets/clean/{name}', index=False)
 
 
 def normalize_feature(x, mean, std):

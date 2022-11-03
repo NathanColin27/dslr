@@ -4,13 +4,13 @@ import math
 
 
 class Data():
-    def __init__(self, datafile="datasets/dataset_train.csv"):
+    def __init__(self, datafile="../datasets/dataset_train.csv"):
         self.df = pd.read_csv(datafile)
 
         self.features = [f for f in list(
             self.df.columns) if np.issubdtype(self.df[f].dtype, np.number)]
-        
-        self.houses = ['Gryffindor', 'Slytherin', 'Hufflepuff','Ravenclaw' ]
+
+        self.houses = ['Gryffindor', 'Slytherin', 'Hufflepuff', 'Ravenclaw']
         self.colors = ["red", "green", "yellow", "blue"]
 
     def __str__(self):
@@ -50,23 +50,23 @@ class Data():
         for i in self.df[feature].dropna():
             min = min if i > min else i
         return min
-    
-    def max(self,feature : str) -> float:
+
+    def max(self, feature: str) -> float:
         max = np.nan
         for i in self.df[feature].dropna():
-            max = max if i < max else i 
+            max = max if i < max else i
         return max
 
-    def percentile(self, feature : str, percent : int) -> float:
+    def percentile(self, feature: str, percent: int) -> float:
         arr = np.array(self.df[feature].dropna())
         arr.sort()
         l = self.count(feature)/100
         if (self.count(feature) == 0):  # Quick fix For testset, to avoid error
             return 0
         return arr[int(percent * l)]
-    
+
     def export_parameters():
         pass
-    
+
     def import_parameters():
         pass

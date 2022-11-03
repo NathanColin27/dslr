@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from data.data import Data
 import matplotlib.pyplot as plt
@@ -44,7 +43,6 @@ class LogisticRegression:
         """
         self.thetas = np.zeros((self.n + 1, 1))
 
-
     def save_weights(self):
         return {'b': self.thetas[0].tolist(), 'w': self.thetas[1:].tolist()}
 
@@ -78,15 +76,15 @@ class LogisticRegression:
         m, n = X.shape
 
         z = np.dot(X, thetas)
-        pred = self.sigmoid(z)        
-        
-        cost = np.dot(-y.T, np.log(pred)) - (np.dot( (1-y).T, np.log(1 - pred)))
+        pred = self.sigmoid(z)
+
+        cost = np.dot(-y.T, np.log(pred)) - (np.dot((1-y).T, np.log(1 - pred)))
         total_cost = cost / m
-    
+
         # Regularization
         # reg_cost = np.sum(np.dot(w, w.T))
         # total_cost = total_cost + (self.lambda_/(2 * m)) * reg_cost
-        
+
         return total_cost
 
     def compute_gradient(self, X, y, thetas, lambda_):
@@ -109,8 +107,8 @@ class LogisticRegression:
         z = np.dot(X, thetas)
         f_wb = self.sigmoid(z)
 
-        dj = np.dot(X.T, f_wb - np.reshape(y,(len(y),1)) )
-        
+        dj = np.dot(X.T, f_wb - np.reshape(y, (len(y), 1)))
+
         return dj
 
     def gradient_descent(self, cost_function, gradient_function, alpha, num_iters, show_every):
@@ -128,30 +126,31 @@ class LogisticRegression:
         for i in range(num_iters):
 
             # Calculate the gradient and update the parameters
-            dj = gradient_function(self.X, self.y, self.thetas, self.lambda_)   
+            dj = gradient_function(self.X, self.y, self.thetas, self.lambda_)
 
             # Update Parameters using w, b, alpha and gradient
             self.thetas = self.thetas - alpha * dj
 
             # Save cost J at each iteration
-            if i<100000:      # prevent resource exhaustion 
-                cost =  cost_function(self.X, self.y, self.thetas)
+            if i < 100000:      # prevent resource exhaustion
+                cost = cost_function(self.X, self.y, self.thetas)
                 self.J_history.append(float(cost))
 
             # Print cost every at intervals 10 times or as many iterations if < 10
             if i % show_every == 0 or i == num_iters-1:
                 # print(float(cost))
                 # self.w_history.append(self.w)
-                print(f"Iteration {i:4}: Cost {float(self.J_history[-1]):8.2f}   ")
+                print(
+                    f"Iteration {i:4}: Cost {float(self.J_history[-1]):8.2f}   ")
 
-    def fit(self, X, y, alpha=0.001, iterations=1500, show_every=None, lambda_= 1):
+    def fit(self, X, y, alpha=0.001, iterations=1500, show_every=None, lambda_=1):
         """
         setup attributes and apply training
         """
 
         # m: number of observations
         self.m, self.n = X.shape
-        
+
         # train data and label
         self.X = np.c_[np.ones((self.m, 1)), X]
         self.y = y
@@ -166,14 +165,15 @@ class LogisticRegression:
             if (iterations <= 10):
                 show_every = 1
             else:
-                show_every = iterations // 10 
-            
+                show_every = iterations // 10
+
         # Perform Gradient Descent
-        self.gradient_descent(self.compute_cost, self.compute_gradient, alpha, iterations, show_every)
+        self.gradient_descent(
+            self.compute_cost, self.compute_gradient, alpha, iterations, show_every)
 
         return self.J_history
 
-    def predict(self, X, decision_boundary = None): 
+    def predict(self, X, decision_boundary=None):
         """
         Predict whether the label is 0 or 1 using learned logistic
         regression parameters w
@@ -224,10 +224,10 @@ class MultipleLogisticRegression:
             json.dump(weights, outfile)
 
     def load_weights(self, filename):
-        
+
         f = open(filename)
         data = json.load(f)  # returns JSON object as a dictionary
-        
+
         # init models
         if not self.models:
             self.c = len(data)  # get number of category
@@ -240,8 +240,6 @@ class MultipleLogisticRegression:
             b = np.array(data[category]['b'])
             thetas = np.concatenate((b, w), axis=None)
             self.models[idx].load_weights(thetas)
-            
-
 
     def softmax(self, X):
         """
@@ -306,7 +304,7 @@ class MultipleLogisticRegression:
             if (iterations <= 10):
                 show_every = 1
             else:
-                show_every = iterations // 10 
+                show_every = iterations // 10
 
         # init models
         if not self.models:
@@ -318,15 +316,17 @@ class MultipleLogisticRegression:
         for i in range(self.c):
             model = self.models[i]
             print(f"training model {i+1} with alpha= {alpha}")
-            self.cost_histories.append(model.fit(X, y[: , i], alpha=alpha, iterations=iterations, lambda_ = lambda_))
+            self.cost_histories.append(
+                model.fit(X, y[:, i], alpha=alpha, iterations=iterations, lambda_=lambda_))
             p = model.predict(X, decision_boundary)
-            print('Train Accuracy: %f'%(np.mean(p == y[:, i]) * 100))
+            print('Train Accuracy: %f' % (np.mean(p == y[:, i]) * 100))
             print()
 
         plt.figure(figsize=(30, 15))
-        plt.suptitle(f"Logistic regression cost history by models (alpha = {alpha}, iterations = {iterations})", fontsize=18, y=0.95)
-        for index,i in enumerate(self.cost_histories):
-            ax = plt.subplot(2,2, index + 1)
+        plt.suptitle(
+            f"Logistic regression cost history by models (alpha = {alpha}, iterations = {iterations})", fontsize=18, y=0.95)
+        for index, i in enumerate(self.cost_histories):
+            ax = plt.subplot(2, 2, index + 1)
             ax.plot(i)
             ax.set_title(f'model_{index}')
         plt.show()
